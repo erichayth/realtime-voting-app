@@ -1,7 +1,7 @@
 {
   "name": "ai-tools-survey",
   "main": "src/index.ts",
-  "compatibility_date": "2025-02-11",
+  "compatibility_date": "2025-03-07",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
     "enabled": true,

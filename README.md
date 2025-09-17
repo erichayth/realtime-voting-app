@@ -133,9 +133,11 @@ graph LR
     A[Browser] -->|HTTP/WebSocket| B[Cloudflare Worker]
     B --> C[Durable Object]
     B --> D[R2 Storage]
-    C -->|State| E[Survey Data]
-    C -->|Broadcast| F[WebSocket Clients]
-    D --> G[QR Codes]
+    B --> E[Static Assets]
+    C -->|State| F[Survey Data]
+    C -->|Broadcast| G[WebSocket Clients]
+    D --> H[QR Codes]
+    E --> I[HTML/CSS/JS]
 ```
 
 ### Technology Stack
@@ -143,8 +145,8 @@ graph LR
 - **[Cloudflare Workers](https://workers.cloudflare.com)** - Edge compute platform
 - **[Durable Objects](https://developers.cloudflare.com/workers/learning/using-durable-objects/)** - Stateful, single-instance compute
 - **[WebSockets](https://developers.cloudflare.com/workers/learning/using-websockets/)** - Real-time bidirectional communication
-- **[R2 Storage](https://developers.cloudflare.com/r2/)** - Object storage for assets
-- **[Workers Sites](https://developers.cloudflare.com/workers/platform/sites/)** - Static asset serving
+- **[R2 Storage](https://developers.cloudflare.com/r2/)** - Object storage for QR codes
+- **[Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)** - Modern static asset serving
 - **TypeScript** - Type-safe development
 
 ## 🧑‍💻 Development
@@ -179,10 +181,17 @@ realtime-voting-app/
 
 ### Key Files
 
-- **`src/index.ts`** - Core application logic
+- **`src/index.ts`** - Core application logic with proper API/static asset separation
 - **`public/index.html`** - Voting interface
 - **`public/results.html`** - Live results display
-- **`wrangler.jsonc`** - Cloudflare Workers configuration
+- **`wrangler.jsonc`** - Cloudflare Workers configuration with Static Assets
+
+### Technical Improvements
+
+- **Workers Static Assets** - Using modern `assets` binding instead of legacy Workers Sites
+- **Clean separation** - API routes (`/api/*`) handled by Worker, all other paths served as static assets
+- **Automatic handling** - Static Assets binding automatically serves `index.html` for root, handles MIME types, and returns proper 404s
+- **Better performance** - Static assets cached at edge automatically
 
 ## 📊 Performance
 
