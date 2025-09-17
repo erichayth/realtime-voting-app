@@ -52,6 +52,7 @@ build/
 
 # Claude Code specific
 .claude/settings.local.json
+CLAUDE.md
 
 # Playwright MCP
 .playwright-mcp/
