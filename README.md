@@ -9,7 +9,7 @@ A blazing-fast, real-time voting application built with Cloudflare Workers, Dura
 
 ## 🎯 Demo
 
-Try it live: [vote.aicloudrun.com](https://vote.aicloudrun.com) (when deployed)
+Deploy your own instance using the button above to try it live!
 
 ![Voting Interface Preview](https://via.placeholder.com/800x400/1e293b/ffffff?text=Real-time+Voting+App)
 

@@ -14,7 +14,11 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "create-bucket": "wrangler r2 bucket create survey-qr-codes",
-    "reset": "echo 'Update the URL and password in the command below:' && echo 'curl -X POST -H \"Authorization: Bearer YOUR_PASSWORD\" https://your-worker.workers.dev/api/reset'"
+    "reset": "echo 'Update the URL and password in the command below:' && echo 'curl -X POST -H \"Authorization: Bearer YOUR_PASSWORD\" https://your-worker.workers.dev/api/reset'",
+    "simulate": "node simulate-votes.js",
+    "simulate:help": "node simulate-votes.js --help",
+    "generate-qr": "node generate-qr.js",
+    "generate-qr:help": "node generate-qr.js --help"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241205.0",

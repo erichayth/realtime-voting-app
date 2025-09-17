@@ -4,11 +4,18 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-// Configuration
-const DOMAIN_URL = 'https://vote.aicloudrun.com/';
+// Configuration - get domain from command line or use default
+const DOMAIN_URL = process.argv[2] || 'https://your-worker.workers.dev/';
 const QR_SIZE = '400x400';
 const OUTPUT_DIR = path.join(__dirname, 'public');
 const OUTPUT_FILE = 'qr-code.png';
+
+if (process.argv[2] === '--help' || process.argv[2] === '-h') {
+    console.log('Usage: node generate-qr.js [DOMAIN_URL]');
+    console.log('Example: node generate-qr.js https://your-domain.com/');
+    console.log('Default: https://your-worker.workers.dev/');
+    process.exit(0);
+}
 
 console.log('🎯 Generating QR Code for:', DOMAIN_URL);
 console.log('📐 Size:', QR_SIZE);

@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 
-const API_URL = 'https://vote.aicloudrun.com/api/vote';
+// Get API URL from command line argument or use localhost
+const API_URL = process.argv[2] || 'http://localhost:8787/api/vote';
+
+if (process.argv[2] === '--help' || process.argv[2] === '-h') {
+  console.log('Usage: node simulate-votes.js [API_URL]');
+  console.log('Example: node simulate-votes.js https://your-worker.workers.dev/api/vote');
+  console.log('Default: http://localhost:8787/api/vote');
+  process.exit(0);
+}
 
 // Weighted distribution of tools (higher weight = more likely to be selected)
 const toolWeights = {
@@ -90,9 +98,10 @@ async function submitVote(sessionId, selections) {
 // Main simulation function
 async function simulateVotes(count = 100, delayMs = 100) {
   console.log(`🚀 Starting vote simulation for ${count} votes...`);
+  console.log(`🎯 Target API: ${API_URL}`);
   console.log(`⏱️  Delay between votes: ${delayMs}ms`);
   console.log('');
-  
+
   let successful = 0;
   let failed = 0;
   const voteDistribution = {};

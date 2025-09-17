@@ -226,7 +226,7 @@
                 if (data.qrCode && !qrCodeLoaded) {
                     const qrContainer = document.getElementById('qrCodeContainer');
                     qrContainer.innerHTML = `<img src="${data.qrCode}" alt="Survey QR Code" style="width: 100%; height: auto; max-width: 20rem; margin: 0 auto; display: block;">`;
-                    document.getElementById('surveyUrl').textContent = 'https://vote.aicloudrun.com';
+                    document.getElementById('surveyUrl').textContent = window.location.origin;
                     qrCodeLoaded = true;  // Mark QR code as loaded
                 }
             } catch (error) {

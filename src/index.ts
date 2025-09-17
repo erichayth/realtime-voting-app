@@ -289,8 +289,10 @@ export default {
         });
       }
       
-      // Generate QR code for the custom domain
-      const surveyUrl = "https://vote.aicloudrun.com/";
+      // Generate QR code for the current domain
+      const host = request.headers.get("host") || "your-worker.workers.dev";
+      const protocol = request.headers.get("x-forwarded-proto") || "https";
+      const surveyUrl = `${protocol}://${host}/`;
       const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(surveyUrl)}`;
       
       const qrResponse = await fetch(qrApiUrl);
