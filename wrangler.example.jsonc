@@ -1,0 +1,44 @@
+{
+  "name": "ai-tools-survey",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-03-07",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "SURVEY_MANAGER",
+        "class_name": "SurveyManager"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["SurveyManager"]
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "QR_CODES",
+      "bucket_name": "your-bucket-name-here"
+    }
+  ],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "RESET_PASSWORD": "CHANGE_ME_BEFORE_DEPLOY"
+  }
+  // Optional: Add custom domain routes
+  // "routes": [
+  //   {
+  //     "pattern": "your-domain.com",
+  //     "custom_domain": true
+  //   }
+  // ]
+}

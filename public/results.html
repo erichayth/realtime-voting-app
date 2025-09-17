@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Voting Results - AI Tools Survey</title>
+    <link rel="stylesheet" href="/results-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h1>Live Voting Results</h1>
+                    <p class="subtitle">Which AI tools have you tried?</p>
+                    <div class="status-container">
+                        <div class="pulse-dot"></div>
+                        <span class="status-text">Live Updates</span>
+                    </div>
+                </div>
+                <div class="total-votes-container">
+                    <p class="total-votes-label">Total Votes</p>
+                    <p id="totalVotes" class="total-votes-number">0</p>
+                    <a href="/" class="back-link">← Back to Voting</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid">
+            <!-- Chart Section -->
+            <div>
+                <div class="card">
+                    <h2>Vote Distribution</h2>
+                    <div class="chart-container">
+                        <canvas id="votingChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Detailed Results -->
+                <div class="card">
+                    <h2>Detailed Results</h2>
+                    <div id="detailedResults" class="results-list">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Section -->
+            <div>
+                <div class="card qr-section">
+                    <h2>Join the Survey</h2>
+                    <div id="qrCodeContainer" class="qr-container">
+                        <div class="qr-loading">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <p>Loading QR Code...</p>
+                        </div>
+                    </div>
+                    <div class="qr-info">
+                        <p class="qr-info-text">Scan to participate</p>
+                        <p id="surveyUrl" class="qr-url"></p>
+                    </div>
+                    
+                    <!-- Reset Button -->
+                    <div class="reset-section">
+                        <button id="resetButton" class="reset-button">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Reset Survey
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SURVEY_ID = 'ai-tools-survey';
+        let chart = null;
+        let lastResults = null;
+        let qrCodeLoaded = false;  // Track if QR code has been loaded
+        let ws = null;
+        let reconnectAttempts = 0;
+
+        // Initialize chart
+        function initChart() {
+            const ctx = document.getElementById('votingChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Votes',
+                        data: [],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(139, 92, 246, 0.8)',
+                            'rgba(236, 72, 153, 0.8)',
+                            'rgba(14, 165, 233, 0.8)',
+                            'rgba(34, 197, 94, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(16, 185, 129)',
+                            'rgb(245, 158, 11)',
+                            'rgb(239, 68, 68)',
+                            'rgb(139, 92, 246)',
+                            'rgb(236, 72, 153)',
+                            'rgb(14, 165, 233)',
+                            'rgb(34, 197, 94)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                                    return `${context.parsed.y} votes (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                // Dynamic step size based on max value
+                                callback: function(value) {
+                                    if (Math.floor(value) === value) {
+                                        return value;
+                                    }
+                                },
+                                // Let Chart.js automatically determine the step size
+                                precision: 0  // No decimal places
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 500
+                    }
+                }
+            });
+        }
+
+        // Update chart with new data
+        function updateChart(results) {
+            if (!chart) return;
+
+            const sortedResults = Object.entries(results)
+                .sort((a, b) => b[1] - a[1]);
+
+            chart.data.labels = sortedResults.map(([tool]) => tool);
+            chart.data.datasets[0].data = sortedResults.map(([, votes]) => votes);
+            chart.update();
+        }
+
+        // Update detailed results
+        function updateDetailedResults(results, totalVoters) {
+            const container = document.getElementById('detailedResults');
+            const totalSelections = Object.values(results).reduce((a, b) => a + b, 0);
+            
+            const sortedResults = Object.entries(results)
+                .sort((a, b) => b[1] - a[1]);
+
+            container.innerHTML = sortedResults.map(([tool, votes], index) => {
+                // Calculate percentage based on total selections to show relative popularity
+                const percentage = totalSelections > 0 ? ((votes / totalSelections) * 100).toFixed(1) : 0;
+                const isNew = lastResults && (!lastResults[tool] || lastResults[tool] < votes);
+                
+                return `
+                    <div class="result-item ${isNew ? 'new' : ''}">
+                        <div style="display: flex; align-items: center;">
+                            <span class="result-rank">${index + 1}</span>
+                            <span class="result-name">${tool}</span>
+                        </div>
+                        <div class="result-stats">
+                            <div style="text-align: right; margin-right: 1rem;">
+                                <span class="result-votes">${votes}</span>
+                                <span class="result-percentage">votes</span>
+                            </div>
+                            <div class="result-bar">
+                                <div class="result-bar-fill" style="width: ${percentage}%"></div>
+                            </div>
+                            <span class="result-percentage" style="min-width: 45px; text-align: right;">${percentage}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Fetch and display results
+        async function fetchResults() {
+            try {
+                const response = await fetch(`/api/survey/${SURVEY_ID}/results`);
+                const data = await response.json();
+                
+                // Update total votes (use the actual voter count, not sum of selections)
+                const totalVotes = data.totalVotes || 0;
+                document.getElementById('totalVotes').textContent = totalVotes;
+                
+                // Update chart and detailed results
+                updateChart(data.results);
+                updateDetailedResults(data.results, totalVotes);
+                
+                // Store last results for comparison
+                lastResults = data.results;
+                
+                // Update QR code only once (it doesn't change)
+                if (data.qrCode && !qrCodeLoaded) {
+                    const qrContainer = document.getElementById('qrCodeContainer');
+                    qrContainer.innerHTML = `<img src="${data.qrCode}" alt="Survey QR Code" style="width: 100%; height: auto; max-width: 20rem; margin: 0 auto; display: block;">`;
+                    document.getElementById('surveyUrl').textContent = 'https://vote.aicloudrun.com';
+                    qrCodeLoaded = true;  // Mark QR code as loaded
+                }
+            } catch (error) {
+                console.error('Error fetching results:', error);
+            }
+        }
+
+        // Reset survey
+        async function resetSurvey() {
+            const password = prompt('Enter admin password to reset the survey:');
+            if (!password) return;
+
+            try {
+                const response = await fetch(`/api/survey/${SURVEY_ID}/reset`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Survey reset successfully!');
+                    fetchResults();
+                } else {
+                    alert(result.error || 'Failed to reset survey');
+                }
+            } catch (error) {
+                console.error('Error resetting survey:', error);
+                alert('Failed to reset survey');
+            }
+        }
+
+        // WebSocket connection for real-time updates
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/api/ws`);
+            
+            ws.onopen = () => {
+                console.log('WebSocket connected for real-time updates');
+                reconnectAttempts = 0;
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'state' || data.type === 'update') {
+                    // Update only the data, not the entire UI
+                    const totalVotes = data.data.totalVotes || 0;
+                    document.getElementById('totalVotes').textContent = totalVotes;
+                    
+                    // Smoothly update chart
+                    if (data.data.tallies) {
+                        updateChart(data.data.tallies);
+                        // Only update detailed results with smooth animation
+                        updateDetailedResultsSmoothly(data.data.tallies, totalVotes);
+                        lastResults = data.data.tallies;
+                    }
+                } else if (data.type === 'reset') {
+                    // Full refresh on reset
+                    fetchResults();
+                }
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                reconnectWithBackoff();
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+        
+        function reconnectWithBackoff() {
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+            reconnectAttempts++;
+            
+            setTimeout(() => {
+                console.log(`Reconnecting WebSocket... (attempt ${reconnectAttempts})`);
+                connectWebSocket();
+            }, delay);
+        }
+        
+        // Smooth update for detailed results without full refresh
+        function updateDetailedResultsSmoothly(results, totalVoters) {
+            const container = document.getElementById('detailedResults');
+            const totalSelections = Object.values(results).reduce((a, b) => a + b, 0);
+            
+            const sortedResults = Object.entries(results)
+                .sort((a, b) => b[1] - a[1]);
+            
+            sortedResults.forEach(([tool, votes], index) => {
+                const percentage = totalSelections > 0 ? ((votes / totalSelections) * 100).toFixed(1) : 0;
+                
+                // Try to find existing element for this tool
+                let existingItem = Array.from(container.children).find(child => 
+                    child.querySelector('.result-name')?.textContent === tool
+                );
+                
+                if (existingItem) {
+                    // Update existing item
+                    const rankEl = existingItem.querySelector('.result-rank');
+                    const votesEl = existingItem.querySelector('.result-votes');
+                    const barFillEl = existingItem.querySelector('.result-bar-fill');
+                    const percentEl = existingItem.querySelectorAll('.result-percentage')[1];
+                    
+                    if (rankEl) rankEl.textContent = index + 1;
+                    if (votesEl) votesEl.textContent = votes;
+                    if (barFillEl) barFillEl.style.width = `${percentage}%`;
+                    if (percentEl) percentEl.textContent = `${percentage}%`;
+                    
+                    // Add animation class if value increased
+                    if (lastResults && lastResults[tool] < votes) {
+                        existingItem.classList.add('new');
+                        setTimeout(() => existingItem.classList.remove('new'), 1000);
+                    }
+                } else {
+                    // If element doesn't exist, do a full refresh
+                    updateDetailedResults(results, totalVoters);
+                    return;
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            fetchResults();
+            
+            // Connect WebSocket for real-time updates
+            connectWebSocket();
+            
+            // Fallback: Poll every 10 seconds in case WebSocket fails
+            setInterval(() => {
+                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    fetchResults();
+                }
+            }, 10000);
+            
+            // Setup reset button
+            document.getElementById('resetButton').addEventListener('click', resetSurvey);
+        });
+    </script>
+</body>
+</html>

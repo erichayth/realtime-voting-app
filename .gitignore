@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Wrangler files
+.wrangler/
+wrangler.toml
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# Build outputs
+dist/
+build/
+
+# Claude Code specific
+.claude/settings.local.json
+
+# Playwright MCP
+.playwright-mcp/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# R2 bucket local cache (if any)
+r2-cache/
+
+# Local development files
+.dev.vars

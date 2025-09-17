@@ -1,0 +1,314 @@
+/* Production-ready CSS for Results Page */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(to bottom right, #eff6ff, #e0e7ff);
+    line-height: 1.5;
+    color: #1f2937;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Card Styles */
+.card {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* Typography */
+h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    color: #6b7280;
+}
+
+/* Status Indicators */
+.status-container {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.pulse-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    background: #10b981;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.status-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+/* Total Votes Display */
+.total-votes-container {
+    text-align: right;
+}
+
+.total-votes-label {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin-bottom: 0.25rem;
+}
+
+.total-votes-number {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #6366f1;
+}
+
+.back-link {
+    font-size: 0.875rem;
+    color: #3b82f6;
+    text-decoration: none;
+    margin-top: 0.5rem;
+    display: inline-block;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+/* Grid Layout */
+.grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+    .grid {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 400px;
+}
+
+/* Detailed Results */
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.result-item.new {
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from { 
+        transform: translateY(20px); 
+        opacity: 0; 
+    }
+    to { 
+        transform: translateY(0); 
+        opacity: 1; 
+    }
+}
+
+.result-rank {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #9ca3af;
+    margin-right: 0.75rem;
+}
+
+.result-name {
+    font-weight: 500;
+    color: #374151;
+    flex: 1;
+}
+
+.result-stats {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.result-votes {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #6366f1;
+}
+
+.result-percentage {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.result-bar {
+    height: 0.5rem;
+    background: #e5e7eb;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    width: 100px;
+}
+
+.result-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    transition: width 0.5s ease;
+}
+
+/* QR Code Section */
+.qr-section {
+    position: sticky;
+    top: 2rem;
+}
+
+.qr-container {
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    min-height: 16rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.qr-loading {
+    text-align: center;
+    color: #9ca3af;
+}
+
+.qr-loading svg {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 0.5rem;
+}
+
+.qr-container img {
+    width: 100%;
+    height: auto;
+    max-width: 20rem;
+    margin: 0 auto;
+    display: block;
+}
+
+.qr-info {
+    text-align: center;
+}
+
+.qr-info-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.qr-url {
+    font-size: 0.75rem;
+    color: #3b82f6;
+    word-break: break-all;
+}
+
+/* Reset Button */
+.reset-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.reset-button {
+    width: 100%;
+    background: #ef4444;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.reset-button:hover {
+    background: #dc2626;
+}
+
+.reset-button svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .container {
+        padding: 1rem 0.5rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .total-votes-number {
+        font-size: 1.875rem;
+    }
+    
+    .card {
+        padding: 1rem;
+    }
+    
+    .result-bar {
+        width: 60px;
+    }
+}

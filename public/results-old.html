@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Voting Results - AI Tools Survey</title>
+    <link rel="stylesheet" href="/results-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-xl p-6 mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">Live Voting Results</h1>
+                    <p class="text-gray-600">Which AI tools have you tried?</p>
+                    <div class="flex items-center mt-2">
+                        <div class="pulse bg-green-500 h-3 w-3 rounded-full mr-2"></div>
+                        <span class="text-sm text-gray-600">Live Updates</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500 mb-1">Total Votes</p>
+                    <p id="totalVotes" class="text-4xl font-bold text-indigo-600">0</p>
+                    <a href="/" class="text-sm text-blue-600 hover:underline mt-2 inline-block">← Back to Voting</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Chart Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-xl p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Vote Distribution</h2>
+                    <div class="relative" style="height: 400px;">
+                        <canvas id="votingChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Detailed Results -->
+                <div class="bg-white rounded-lg shadow-xl p-6 mt-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Detailed Results</h2>
+                    <div id="detailedResults" class="space-y-3">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Section -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-xl p-6 sticky top-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Join the Survey</h2>
+                    <div id="qrCodeContainer" class="bg-gray-50 rounded-lg p-4 mb-4">
+                        <div class="flex justify-center items-center h-64">
+                            <div class="text-gray-400 text-center">
+                                <svg class="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                <p>Loading QR Code...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm text-gray-600 mb-2">Scan to participate</p>
+                        <p id="surveyUrl" class="text-xs text-blue-600 break-all"></p>
+                    </div>
+                    
+                    <!-- Reset Button -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <button id="resetButton" class="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-200 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Reset Survey
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SURVEY_ID = 'ai-tools-survey';
+        let chart = null;
+        let lastResults = null;
+        let qrCodeLoaded = false;  // Track if QR code has been loaded
+
+        // Initialize chart
+        function initChart() {
+            const ctx = document.getElementById('votingChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Votes',
+                        data: [],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(139, 92, 246, 0.8)',
+                            'rgba(236, 72, 153, 0.8)',
+                            'rgba(14, 165, 233, 0.8)',
+                            'rgba(34, 197, 94, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(59, 130, 246)',
+                            'rgb(16, 185, 129)',
+                            'rgb(245, 158, 11)',
+                            'rgb(239, 68, 68)',
+                            'rgb(139, 92, 246)',
+                            'rgb(236, 72, 153)',
+                            'rgb(14, 165, 233)',
+                            'rgb(34, 197, 94)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                                    return `${context.parsed.y} votes (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 500
+                    }
+                }
+            });
+        }
+
+        // Update chart with new data
+        function updateChart(results) {
+            if (!chart) return;
+
+            const sortedResults = Object.entries(results)
+                .sort((a, b) => b[1] - a[1]);
+
+            chart.data.labels = sortedResults.map(([tool]) => tool);
+            chart.data.datasets[0].data = sortedResults.map(([, votes]) => votes);
+            chart.update();
+        }
+
+        // Update detailed results
+        function updateDetailedResults(results, totalVoters) {
+            const container = document.getElementById('detailedResults');
+            const totalSelections = Object.values(results).reduce((a, b) => a + b, 0);
+            
+            const sortedResults = Object.entries(results)
+                .sort((a, b) => b[1] - a[1]);
+
+            container.innerHTML = sortedResults.map(([tool, votes], index) => {
+                // Calculate percentage based on total selections to show relative popularity
+                const percentage = totalSelections > 0 ? ((votes / totalSelections) * 100).toFixed(1) : 0;
+                const isNew = lastResults && (!lastResults[tool] || lastResults[tool] < votes);
+                
+                return `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg ${isNew ? 'slide-in' : ''}">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-gray-400 mr-3">${index + 1}</span>
+                            <span class="font-medium text-gray-700">${tool}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="text-right mr-4">
+                                <span class="text-xl font-bold text-indigo-600">${votes}</span>
+                                <span class="text-sm text-gray-500 ml-1">votes</span>
+                            </div>
+                            <div class="w-24 bg-gray-200 rounded-full h-6 relative">
+                                <div class="bg-indigo-600 h-6 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                                <span class="absolute inset-0 flex items-center justify-center text-xs font-medium text-white">${percentage}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Fetch and display results
+        async function fetchResults() {
+            try {
+                const response = await fetch(`/api/survey/${SURVEY_ID}/results`);
+                const data = await response.json();
+                
+                // Update total votes (use the actual voter count, not sum of selections)
+                const totalVotes = data.totalVotes || 0;
+                document.getElementById('totalVotes').textContent = totalVotes;
+                
+                // Update chart and detailed results
+                updateChart(data.results);
+                updateDetailedResults(data.results, totalVotes);
+                
+                // Store last results for comparison
+                lastResults = data.results;
+                
+                // Update QR code only once (it doesn't change)
+                if (data.qrCode && !qrCodeLoaded) {
+                    const qrContainer = document.getElementById('qrCodeContainer');
+                    qrContainer.innerHTML = `<img src="${data.qrCode}" alt="Survey QR Code" class="w-full h-auto max-w-xs mx-auto">`;
+                    document.getElementById('surveyUrl').textContent = 'https://vote.aicloudrun.com';
+                    qrCodeLoaded = true;  // Mark QR code as loaded
+                }
+            } catch (error) {
+                console.error('Error fetching results:', error);
+            }
+        }
+
+        // Reset survey
+        async function resetSurvey() {
+            const password = prompt('Enter admin password to reset the survey:');
+            if (!password) return;
+
+            try {
+                const response = await fetch(`/api/survey/${SURVEY_ID}/reset`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    alert('Survey reset successfully!');
+                    fetchResults();
+                } else {
+                    alert(result.error || 'Failed to reset survey');
+                }
+            } catch (error) {
+                console.error('Error resetting survey:', error);
+                alert('Failed to reset survey');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            fetchResults();
+            
+            // Poll for updates every 2 seconds
+            setInterval(fetchResults, 2000);
+            
+            // Setup reset button
+            document.getElementById('resetButton').addEventListener('click', resetSurvey);
+        });
+    </script>
+</body>
+</html>
