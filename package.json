@@ -1,12 +1,20 @@
 {
-  "name": "ai-tools-survey",
+  "name": "realtime-voting-app",
   "version": "1.0.0",
-  "description": "Real-time live survey application for AI tools using Cloudflare Workers",
+  "description": "Real-time voting application built with Cloudflare Workers, Durable Objects, and WebSockets",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/erichayth/realtime-voting-app.git"
+  },
+  "homepage": "https://github.com/erichayth/realtime-voting-app#readme",
+  "bugs": {
+    "url": "https://github.com/erichayth/realtime-voting-app/issues"
+  },
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "create-bucket": "wrangler r2 bucket create survey-qr-codes",
-    "reset": "curl -X POST -H 'Authorization: Bearer demo-reset-password' https://ai-tools-survey.workers.dev/api/reset"
+    "reset": "echo 'Update the URL and password in the command below:' && echo 'curl -X POST -H \"Authorization: Bearer YOUR_PASSWORD\" https://your-worker.workers.dev/api/reset'"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241205.0",
@@ -19,8 +27,12 @@
     "durable-objects",
     "websocket",
     "survey",
-    "real-time"
+    "voting",
+    "real-time",
+    "live-polling"
   ],
-  "author": "",
-  "license": "MIT"
-}
+  "author": "erichayth",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }}
